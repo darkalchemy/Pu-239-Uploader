@@ -1,0 +1,12 @@
+<?php
+
+$config = [
+    'username'      => '', // site username
+    'torrent_pass'  => '', // site torrent_pass
+    'auth'          => '', // site_auth
+    'url'           => '', // site base url
+    'category'      => readline('Site Category ID: '), // this can be found on your site, categoryids.php
+    'path'          => readline('Path to Data(must be a directory): '), // this must a folder
+    'descr'         => readline('Path to Description File(must be a file): '), // this must be a file
+];
+
