@@ -28,6 +28,7 @@ $mb = bytes_to_megabytes($dirsize);
 $pieces = get_piece_size($mb);
 echo "$mb => $pieces = " . ceil($mb * 1024 / $pieces) . " pieces\n";
 $torrent = create_torrent($name, $pieces, $nfo, $config);
+
 $search = curl_search($name, $config);
 if (!empty($search['msg'])) {
     echo $search['msg'] . "\n";
@@ -35,7 +36,27 @@ if (!empty($search['msg'])) {
     echo "Torrent Exists\nid: {$search[0]['id']}\nname: {$search[0]['name']}\n";
     die();
 }
+
 upload_torrent($torrent, $name, $nfo, $config);
+$search = curl_search($name, $config);
+if (!empty($search[0]['id'])) {
+    download_torrent($torrent, $config, $search[0]['id']);
+    if (file_exists($torrent)) {
+        echo "$torrent downloaded successfully from {$config['url']}\n";
+    } else {
+        echo "$torrent failed to downloaded from {$config['url']}\n";
+    }
+}
+
+function download_torrent($torrent, $config, $tid)
+{
+    $curl = new Curl();
+    if (file_exists($torrent)) {
+        unlink($torrent);
+    }
+    $curl->download($config['url'] . "/download.php?torrent={$tid}&torrent_pass={$config['torrent_pass']}", $torrent);
+    $curl->close();
+}
 
 function curl_search($name, $config)
 {
@@ -63,11 +84,11 @@ function curl_post($name, $cat, $torrent, $body, $nfo, $config)
         'bot'          => $config['username'],
         'torrent_pass' => $config['torrent_pass'],
         'auth'         => $config['auth'],
-        'name'         => $name,
+        'name'         => "$name",
         'type'         => $cat,
         'file'         => "@$torrent",
         'nfo'          => "@$nfo",
-        'body'         => $body,
+        'body'         => "$body",
     ]);
 
     if ($curl->error) {
@@ -81,7 +102,6 @@ function curl_post($name, $cat, $torrent, $body, $nfo, $config)
 function upload_torrent($torrent, $name, $nfo, $config)
 {
     $desc = file_get_contents($config['descr']);
-//    $nfo = file_get_contents($nfo);
     $response = curl_post($name, $config['category'], $torrent, $desc, $nfo, $config);
     echo $response . "\n";
 }
@@ -122,7 +142,6 @@ function get_piece_size($mb)
         default:
             return 16;
     }
-
 }
 
 function bytes_to_megabytes($bytes)
@@ -135,8 +154,10 @@ function create_torrent($name, $pieces, $nfo, $config)
 {
     $announce = $config['url'] . '/announce.php';
     $comment = 'Thanks for downloading!';
-    $command = "mktorrent -l{$pieces} -a{$announce} -c'{$comment}' -o'{$name}.torrent' '{$config['path']}'";
-    unlink("{$name}.torrent");
+    $command = "mktorrent -l{$pieces} -a{$announce} -c'{$comment}' -o\"{$name}.torrent\" \"{$config['path']}\"";
+    if (file_exists("{$name}.torrent")) {
+        unlink("{$name}.torrent");
+    }
     passthru($command);
     return "{$name}.torrent";
 }

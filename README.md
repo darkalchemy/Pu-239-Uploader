@@ -28,5 +28,5 @@ php upload.php
 ### To update
 ```
 git pull
-composer update
+composer install
 ```
