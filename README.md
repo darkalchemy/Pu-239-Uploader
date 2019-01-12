@@ -1,3 +1,6 @@
+# Pu-239 Uploader
+This can be used to upload a single file or call it from another file and upload multiple torrents.
+
 ### If mktorrent is not installed
 ```
 sudo apt-get install mktorrent
