@@ -25,9 +25,14 @@ cp config.php.example config.php
 nano config.php
 ```
 
-### Running the script
+### Running on a single folder
 ```
 php upload.php
+```
+
+### Running on a multiplee folders
+```
+php loop_example.php /path/to/parent/folder/
 ```
 
 ### To update
