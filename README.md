@@ -30,7 +30,7 @@ nano config.php
 php upload.php
 ```
 
-### Running on a multiplee folders
+### Running on a multiple folders
 ```
 php loop_example.php /path/to/parent/folder/
 ```
