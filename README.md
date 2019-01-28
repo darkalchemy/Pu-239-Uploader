@@ -19,7 +19,7 @@ cd Pu-239-Uploader
 composer install
 ```
 
-### Copy config files and edit
+### Edit config file
 ```
 nano config.php
 ```
