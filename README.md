@@ -21,7 +21,6 @@ composer install
 
 ### Copy config files and edit
 ```
-cp config.php.example config.php
 nano config.php
 ```
 
@@ -32,7 +31,7 @@ php upload.php
 
 ### Running on multiple folders
 ```
-php loop_example.php /path/to/parent/folder/
+php upload_loop.php /path/to/parent/folder/
 ```
 
 ### To update

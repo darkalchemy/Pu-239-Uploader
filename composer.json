@@ -1,11 +1,19 @@
 {
-  "require": {
-    "mp091689/dump-die": "^1.0",
-    "php-curl-class/php-curl-class": "^8.1"
-  },
-  "autoload": {
-    "psr-4": {
-      "": "src"
+    "require": {
+        "mp091689/dump-die": "^1.0",
+        "php-curl-class/php-curl-class": "^8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "src"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "cp -n config.php.example config.php"
+        ],
+        "post-update-cmd": [
+            "cp -n config.php.example config.php"
+        ]
     }
-  }
 }
