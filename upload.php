@@ -60,6 +60,7 @@ function download_torrent($torrent, $config, $tid)
 
 function curl_search($name, $config)
 {
+    $name = getname();
     $curl = new Curl();
     $curl->post($config['url'] . '/search.php', [
         'bot'          => $config['username'],
@@ -176,3 +177,18 @@ function GetDirectorySize($path)
     return $bytestotal;
 }
 
+function getname($name)
+{
+    $name = str_replace('.torrent', '', $name);
+    $name = str_ireplace('H.264', 'H_264', $name);
+    $name = str_replace('7.1', '7_1', $name);
+    $name = str_replace('5.1', '5_1', $name);
+    $name = str_replace('2.1', '2_1', $name);
+    $name = str_ireplace('.', ' ', $name);
+    $name = str_ireplace('H_264', 'H.264', $name);
+    $name = str_replace('7_1', '7.1', $name);
+    $name = str_replace('5_1', '5.1', $name);
+    $name = str_replace('2_1', '2.1', $name);
+
+    return $name;
+}

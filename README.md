@@ -19,17 +19,14 @@ cd Pu-239-Uploader
 composer install
 ```
 
-### Edit config file
+### Edit config.php
 ```
 nano config.php
 ```
 
-### Running on a single folder
-```
-php upload.php
-```
+### Running on a single folder ```php upload.php``` and follow the prompts
 
-### Running on multiple folders
+### Running on multiple folders, point ```upload_loop.php``` to the parent folder
 ```
 php upload_loop.php /path/to/parent/folder/
 ```
