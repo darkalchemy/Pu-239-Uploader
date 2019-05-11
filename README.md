@@ -10,7 +10,7 @@ sudo apt-get install mktorrent
 
 ### Clone the repo
 ```
-git clone https://gitlab.com/darkalchemy/Pu-239-Uploader.git
+git clone https://github.com/darkalchemy/Pu-239-Uploader.git
 ```
 
 ### Install dependancies
