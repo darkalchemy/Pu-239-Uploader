@@ -21,6 +21,7 @@ composer install
 
 ### Edit config.php
 ```
+cp config.php.example config.php
 nano config.php
 ```
 
