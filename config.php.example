@@ -1,5 +1,6 @@
 <?php
 
+// Edit this
 $base_config = [
     'username'      => '', // site username
     'torrent_pass'  => '', // site torrent_pass
@@ -7,6 +8,7 @@ $base_config = [
     'url'           => '', // site base url
 ];
 
+// Do not edit this
 if (count($argv) === 1) {
     $config = [
         'category'      => readline('Site Category ID: '), // this can be found on your site, categoryids.php
