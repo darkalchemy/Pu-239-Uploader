@@ -3,8 +3,8 @@
 // Edit this
 $base_config = [
     'username'      => '', // site username
-    'torrent_pass'  => '', // site torrent_pass
-    'auth'          => '', // site_auth
+    'torrent_pass'  => '', // site torrent_pass /usercp.php?action=api
+    'auth'          => '', // site auth         /usercp.php?action=api
     'url'           => '', // site base url
 ];
 
@@ -13,13 +13,13 @@ if (count($argv) === 1) {
     $config = [
         'category'      => readline('Site Category ID: '), // this can be found on your site, categoryids.php
         'path'          => readline('Path to Data(must be a directory): '), // this must a folder
-        'descr'         => readline('Path to Description File(must be a file): '), // this must be a file
+        'descr'         => readline('Path to Description File(must be a file): '), // this must be a file / nfo
     ];
 } elseif (count($argv) === 4) {
     $config = [
         'category'      => $argv[1], // this can be found on your site, categoryids.php
         'path'          => $argv[2], // this must a folder
-        'descr'         => $argv[3], // this must be a file
+        'descr'         => $argv[3], // this must be a file / nfo
     ];
 } else {
     die("You must include category, path and descr\n{$argv[1]} 14 '/path/to/movie' '/path/to/descr.txt'\n\n");
