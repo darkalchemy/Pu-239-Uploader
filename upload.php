@@ -5,7 +5,7 @@ require_once 'config.php';
 
 use \Curl\Curl;
 
-if (empty($config['path']) || !file_exists($config['path']) || !is_dir($config['path'])) {
+if (empty($config) || empty($config['path']) || !file_exists($config['path']) || !is_dir($config['path'])) {
     die("The path to the data to upload must be a folder, not a file.\n");
 }
 if (empty($config['descr']) || !file_exists($config['descr'])) {
@@ -26,10 +26,14 @@ $dirsize = GetDirectorySize($config['path']);
 echo "Preparing to upload => $name\n";
 $mb = bytes_to_megabytes($dirsize);
 $pieces = get_piece_size($mb);
-echo "$mb => $pieces = " . ceil($mb * 1024 / $pieces) . " pieces\n";
-$torrent = create_torrent($name, $pieces, $nfo, $config);
+echo "$mb => $pieces = " . ceil($dirsize / 1024 / 1024 / $pieces) . " pieces\n";
+$torrent = create_torrent($name, $pieces, $config);
 
-$search = curl_search($name, $config);
+try {
+    $search = curl_search($name, $config);
+} catch (ErrorException $e) {
+    // TODO
+}
 if (!empty($search['msg'])) {
     echo $search['msg'] . "\n";
 } else {
@@ -37,10 +41,22 @@ if (!empty($search['msg'])) {
     die();
 }
 
-upload_torrent($torrent, $name, $nfo, $config);
-$search = curl_search($name, $config);
+try {
+    upload_torrent($torrent, $name, $nfo, $config);
+} catch (ErrorException $e) {
+    // TODO
+}
+try {
+    $search = curl_search($name, $config);
+} catch (ErrorException $e) {
+    // TODO
+}
 if (!empty($search[0]['id'])) {
-    download_torrent($torrent, $config, $search[0]['id']);
+    try {
+        download_torrent($torrent, $config, $search[0]['id']);
+    } catch (ErrorException $e) {
+        // TODO
+    }
     if (file_exists($torrent)) {
         echo "$torrent downloaded successfully from {$config['url']}\n";
     } else {
@@ -48,6 +64,12 @@ if (!empty($search[0]['id'])) {
     }
 }
 
+/**
+ * @param $torrent
+ * @param $config
+ * @param $tid
+ * @throws ErrorException
+ */
 function download_torrent($torrent, $config, $tid)
 {
     $curl = new Curl();
@@ -58,15 +80,21 @@ function download_torrent($torrent, $config, $tid)
     $curl->close();
 }
 
+/**
+ * @param $name
+ * @param $config
+ * @return mixed
+ * @throws ErrorException
+ */
 function curl_search($name, $config)
 {
-    $name = getname();
+    $name = getname($name);
     $curl = new Curl();
     $curl->post($config['url'] . '/search.php', [
-        'bot'          => $config['username'],
+        'bot' => $config['username'],
         'torrent_pass' => $config['torrent_pass'],
-        'auth'         => $config['auth'],
-        'search'       => $name,
+        'auth' => $config['auth'],
+        'search' => $name,
     ]);
 
     if ($curl->error) {
@@ -75,31 +103,48 @@ function curl_search($name, $config)
     } else {
         return json_decode(json_encode($curl->response), true);
     }
-    $curl->close();
 }
 
+/**
+ * @param $name
+ * @param $cat
+ * @param $torrent
+ * @param $body
+ * @param $nfo
+ * @param $config
+ * @return mixed
+ * @throws ErrorException
+ */
 function curl_post($name, $cat, $torrent, $body, $nfo, $config)
 {
     $curl = new Curl();
     $curl->post($config['url'] . '/takeupload.php', [
-        'bot'          => $config['username'],
+        'bot' => $config['username'],
         'torrent_pass' => $config['torrent_pass'],
-        'auth'         => $config['auth'],
-        'name'         => "$name",
-        'type'         => $cat,
-        'file'         => "@$torrent",
-        'nfo'          => "@$nfo",
-        'body'         => "$body",
+        'auth' => $config['auth'],
+        'name' => "$name",
+        'type' => $cat,
+        'file' => "@$torrent",
+        'nfo' => "@$nfo",
+        'body' => "$body",
     ]);
 
     if ($curl->error) {
-        echo 'Error: ' . $curl->errorCode . ': ' . $curl->errorMessage . "\n";
+        $response = 'Error: ' . $curl->errorCode . ': ' . $curl->errorMessage . "\n";
     } else {
-        return json_decode(json_encode($curl->response), true);
+        $response = json_decode(json_encode($curl->response), true);
     }
     $curl->close();
+    return $response;
 }
 
+/**
+ * @param $torrent
+ * @param $name
+ * @param $nfo
+ * @param $config
+ * @throws ErrorException
+ */
 function upload_torrent($torrent, $name, $nfo, $config)
 {
     $desc = file_get_contents($config['descr']);
@@ -107,6 +152,10 @@ function upload_torrent($torrent, $name, $nfo, $config)
     echo $response . "\n";
 }
 
+/**
+ * @param $mb
+ * @return int
+ */
 function get_piece_size($mb)
 {
     switch (true) {
@@ -145,13 +194,23 @@ function get_piece_size($mb)
     }
 }
 
+/**
+ * @param $bytes
+ * @return string
+ */
 function bytes_to_megabytes($bytes)
 {
     return number_format($bytes / 1024 / 1024, 1);
 }
 
 
-function create_torrent($name, $pieces, $nfo, $config)
+/**
+ * @param $name
+ * @param $pieces
+ * @param $config
+ * @return string
+ */
+function create_torrent($name, $pieces, $config)
 {
     $announce = $config['url'] . '/announce.php';
     $comment = 'Thanks for downloading!';
@@ -163,6 +222,10 @@ function create_torrent($name, $pieces, $nfo, $config)
     return "{$name}.torrent";
 }
 
+/**
+ * @param $path
+ * @return int
+ */
 function GetDirectorySize($path)
 {
     $bytestotal = $files = 0;
@@ -177,18 +240,22 @@ function GetDirectorySize($path)
     return $bytestotal;
 }
 
+/**
+ * @param $name
+ * @return mixed
+ */
 function getname($name)
 {
-    $name = str_replace('.torrent', '', $name);
+    $name = str_ireplace('.torrent', '', $name);
     $name = str_ireplace('H.264', 'H_264', $name);
-    $name = str_replace('7.1', '7_1', $name);
-    $name = str_replace('5.1', '5_1', $name);
-    $name = str_replace('2.1', '2_1', $name);
+    $name = str_ireplace('7.1', '7_1', $name);
+    $name = str_ireplace('5.1', '5_1', $name);
+    $name = str_ireplace('2.1', '2_1', $name);
     $name = str_ireplace('.', ' ', $name);
     $name = str_ireplace('H_264', 'H.264', $name);
-    $name = str_replace('7_1', '7.1', $name);
-    $name = str_replace('5_1', '5.1', $name);
-    $name = str_replace('2_1', '2.1', $name);
+    $name = str_ireplace('7_1', '7.1', $name);
+    $name = str_ireplace('5_1', '5.1', $name);
+    $name = str_ireplace('2_1', '2.1', $name);
 
     return $name;
 }

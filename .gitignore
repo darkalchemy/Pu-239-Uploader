@@ -1,3 +1,4 @@
 *.torrent
 config.php
 vendor/
+.idea/
