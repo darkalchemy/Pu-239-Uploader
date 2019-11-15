@@ -1,7 +1,7 @@
 # Pu-239 Uploader
-This can be used to upload a single file or call it from another file and upload multiple torrents.
-
-Point the upload.php script to a single folder and upload 1 torrent or point the loop_example.php script a folder of folders and upload many torrents with the same category.
+This can be used to upload a single file or call it from another file and upload multiple torrents.  
+Point the upload.php script to a single folder and upload 1 torrent or point the loop_example.php script a folder of folders and upload many torrents with the same category.  
+This script gets the torrent name from the parent folder, so name it appropriately.  
 
 ### If mktorrent is not installed
 ```
@@ -13,7 +13,7 @@ sudo apt-get install mktorrent
 git clone https://github.com/darkalchemy/Pu-239-Uploader.git
 ```
 
-### Install dependancies
+### Install dependencies
 ```
 cd Pu-239-Uploader
 composer install
@@ -25,7 +25,7 @@ cp config.php.example config.php
 nano config.php
 ```
 
-### Running on a single folder ```php upload.php``` and follow the prompts
+### Running on a single folder ```php upload.php``` and follow the prompts or ```php upload.php /path/to/parent_folder /path/to/descr[optional]``` and follow the prompts
 
 ### Running on multiple folders, point ```upload_loop.php``` to the parent folder
 ```

@@ -13,7 +13,7 @@ if (count($argv) === 1) {
     $config = [
         'category' => (int) readline('Site Category ID: '), // this can be found on your site, categoryids.php
         'path' => readline('Path to Data(must be a directory): '), // this must a folder
-        'descr' => readline('Path to Description File(must be a file): '), // this must be a file / nfo
+        'descr' => readline('Path to Description File(must be a file[optional]): '), // this must be a file / nfo
     ];
 } elseif (count($argv) >= 3) {
     $config = [

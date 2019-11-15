@@ -23,11 +23,6 @@ foreach ($objects as $name => $object) {
 }
 $name = basename($config['path']);
 $dirsize = GetDirectorySize($config['path']);
-echo "Preparing to upload => $name\n";
-$mb = bytes_to_megabytes($dirsize);
-$pieces = get_piece_size($mb);
-echo "$mb => $pieces = " . ceil($dirsize / 1024 / 1024 / $pieces) . " pieces\n";
-$torrent = create_torrent($name, $pieces, $config);
 
 try {
     $search = curl_search($name, $config);
@@ -36,11 +31,18 @@ try {
 }
 if (!empty($search['msg'])) {
     echo $search['msg'] . "\n";
-} else {
+} elseif (isset($search[0]['id']) && isset($search[0]['name'])) {
     echo "Torrent Exists\nid: {$search[0]['id']}\nname: {$search[0]['name']}\n";
     die();
+} else {
+    echo "Torrent Exists: {$name}\n";
+    die();
 }
-
+echo "Preparing to upload => $name\n";
+$mb = bytes_to_megabytes($dirsize);
+$pieces = get_piece_size($mb);
+echo "$mb => $pieces = " . ceil($dirsize / 1024 / 1024 / $pieces) . " pieces\n";
+$torrent = create_torrent($name, $pieces, $config);
 try {
     upload_torrent($torrent, $name, $nfo, $config);
 } catch (ErrorException $e) {
