@@ -211,7 +211,7 @@ function get_piece_size(int $mb)
  */
 function bytes_to_megabytes(int $bytes)
 {
-    return number_format($bytes / 1024 / 1024, 1);
+    return ceil($bytes / 1024 / 1024);
 }
 
 /**
