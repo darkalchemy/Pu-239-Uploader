@@ -3,13 +3,10 @@
 require_once 'vendor/autoload.php';
 require_once 'config.php';
 
-use \Curl\Curl;
+use Curl\Curl;
 
 if (empty($config) || empty($config['path']) || !file_exists($config['path']) || !is_dir($config['path'])) {
     die("The path to the data to upload must be a folder, not a file.\n");
-}
-if (empty($config['descr']) || !file_exists($config['descr'])) {
-    die("The path to the data description must be a file.\nIf you do not create one, you may use the nfo, if available.\nBut, you must include a description file.\n");
 }
 
 $nfo = '';
@@ -19,6 +16,9 @@ foreach ($objects as $name => $object) {
     $size = @filesize($name);
     if ($ext === 'nfo' && $size > 0) {
         $nfo = $name;
+        if (empty($config['descr'])) {
+            $config['descr'] = $name;
+        }
     }
 }
 $name = basename($config['path']);
@@ -65,12 +65,13 @@ if (!empty($search[0]['id'])) {
 }
 
 /**
- * @param $torrent
- * @param $config
- * @param $tid
+ * @param string $torrent
+ * @param array $config
+ * @param int $tid
+ *
  * @throws ErrorException
  */
-function download_torrent($torrent, $config, $tid)
+function download_torrent(string $torrent, array $config, int $tid)
 {
     $curl = new Curl();
     if (file_exists($torrent)) {
@@ -81,12 +82,15 @@ function download_torrent($torrent, $config, $tid)
 }
 
 /**
- * @param $name
- * @param $config
+ *
+ * @param string $name
+ * @param array $config
+ *
  * @return mixed
  * @throws ErrorException
+ *
  */
-function curl_search($name, $config)
+function curl_search(string $name, array $config)
 {
     $name = getname($name);
     $curl = new Curl();
@@ -106,16 +110,19 @@ function curl_search($name, $config)
 }
 
 /**
- * @param $name
- * @param $cat
- * @param $torrent
- * @param $body
- * @param $nfo
- * @param $config
- * @return mixed
+ *
+ * @param string $name
+ * @param int $cat
+ * @param string $torrent
+ * @param string $body
+ * @param string $nfo
+ * @param array $config
+ *
+ * @return mixed|string
  * @throws ErrorException
+ *
  */
-function curl_post($name, $cat, $torrent, $body, $nfo, $config)
+function curl_post(string $name, int $cat, string $torrent, string $body, string $nfo, array $config)
 {
     $curl = new Curl();
     $curl->post($config['url'] . '/takeupload.php', [
@@ -135,17 +142,19 @@ function curl_post($name, $cat, $torrent, $body, $nfo, $config)
         $response = json_decode(json_encode($curl->response), true);
     }
     $curl->close();
+
     return $response;
 }
 
 /**
- * @param $torrent
- * @param $name
- * @param $nfo
- * @param $config
+ * @param string $torrent
+ * @param string $name
+ * @param string $nfo
+ * @param array $config
+ *
  * @throws ErrorException
  */
-function upload_torrent($torrent, $name, $nfo, $config)
+function upload_torrent(string $torrent, string $name, string $nfo, array $config)
 {
     $desc = file_get_contents($config['descr']);
     $response = curl_post($name, $config['category'], $torrent, $desc, $nfo, $config);
@@ -153,10 +162,11 @@ function upload_torrent($torrent, $name, $nfo, $config)
 }
 
 /**
- * @param $mb
+ * @param int $mb
+ *
  * @return int
  */
-function get_piece_size($mb)
+function get_piece_size(int $mb)
 {
     switch (true) {
         case $mb >= 484352:
@@ -195,22 +205,23 @@ function get_piece_size($mb)
 }
 
 /**
- * @param $bytes
+ * @param int $bytes
+ *
  * @return string
  */
-function bytes_to_megabytes($bytes)
+function bytes_to_megabytes(int $bytes)
 {
     return number_format($bytes / 1024 / 1024, 1);
 }
 
-
 /**
- * @param $name
- * @param $pieces
- * @param $config
+ * @param string $name
+ * @param int $pieces
+ * @param array $config
+ *
  * @return string
  */
-function create_torrent($name, $pieces, $config)
+function create_torrent(string $name, int $pieces, array $config)
 {
     $announce = $config['url'] . '/announce.php';
     $comment = 'Thanks for downloading!';
@@ -219,21 +230,23 @@ function create_torrent($name, $pieces, $config)
         unlink("{$name}.torrent");
     }
     passthru($command);
+
     return "{$name}.torrent";
 }
 
 /**
- * @param $path
+ * @param string $path
+ *
  * @return int
  */
-function GetDirectorySize($path)
+function GetDirectorySize(string $path)
 {
     $bytestotal = $files = 0;
     $path = realpath($path);
     if ($path !== false && !empty($path) && is_dir($path)) {
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS)) as $object) {
             $bytestotal += $object->getSize();
-            $files++;
+            ++$files;
         }
     }
 
@@ -241,10 +254,11 @@ function GetDirectorySize($path)
 }
 
 /**
- * @param $name
- * @return mixed
+ * @param string $name
+ *
+ * @return mixed|string
  */
-function getname($name)
+function getname(string $name)
 {
     $name = str_ireplace('.torrent', '', $name);
     $name = str_ireplace('H.264', 'H_264', $name);

@@ -1,8 +1,8 @@
 <?php
 
-// This can be used to upload many folders at once, but only if an nfo is present.
+// This can be used to upload many folders at once.
 
-$category = 41; // set this to the category that you uploads will go to
+$category = 41; // set this to the category that your uploads will go to
 
 if (!empty($argv[1])) {
     $path = $argv[1];
@@ -34,4 +34,3 @@ foreach (new DirectoryIterator($path) as $fileinfo) {
         passthru($command);
     }
 }
-
