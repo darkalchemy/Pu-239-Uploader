@@ -9,7 +9,10 @@ if (empty($config) || empty($config['path']) || !file_exists($config['path']) ||
     die("The path to the data to upload must be a folder, not a file.\n");
 }
 
-$nfo = '';
+$nfo = $imdb_id = '';
+if (!empty($config['descr'])) {
+    $imdb_id = get_imdb(file_get_contents($config['descr']));
+}
 $objects = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($config['path'], RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
 foreach ($objects as $name => $object) {
     $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
@@ -19,10 +22,16 @@ foreach ($objects as $name => $object) {
         if (empty($config['descr'])) {
             $config['descr'] = $name;
         }
+        if (empty($imdb_id)) {
+            $imdb_id = get_imdb(file_get_contents($nfo));
+        }
     }
 }
 $name = basename($config['path']);
 $dirsize = GetDirectorySize($config['path']);
+if (empty($config['descr'])) {
+    $config['descr'] = $name;
+}
 
 try {
     $search = curl_search($name, $config);
@@ -31,7 +40,7 @@ try {
 }
 if (!empty($search['msg'])) {
     echo $search['msg'] . "\n";
-} elseif (isset($search[0]['id']) && isset($search[0]['name'])) {
+} elseif (isset($search[0]['id'], $search[0]['name'])) {
     echo "Torrent Exists\nid: {$search[0]['id']}\nname: {$search[0]['name']}\n";
     die();
 } else {
@@ -44,7 +53,7 @@ $pieces = get_piece_size($mb);
 echo "$mb => $pieces = " . ceil($dirsize / 1024 / 1024 / $pieces) . " pieces\n";
 $torrent = create_torrent($name, $pieces, $config);
 try {
-    upload_torrent($torrent, $name, $nfo, $config);
+    upload_torrent($torrent, $name, $nfo, $config, $imdb_id);
 } catch (ErrorException $e) {
     // TODO
 }
@@ -68,8 +77,8 @@ if (!empty($search[0]['id'])) {
 
 /**
  * @param string $torrent
- * @param array $config
- * @param int $tid
+ * @param array  $config
+ * @param int    $tid
  *
  * @throws ErrorException
  */
@@ -86,10 +95,11 @@ function download_torrent(string $torrent, array $config, int $tid)
 /**
  *
  * @param string $name
- * @param array $config
+ * @param array  $config
+ *
+ * @throws ErrorException
  *
  * @return mixed
- * @throws ErrorException
  *
  */
 function curl_search(string $name, array $config)
@@ -114,20 +124,20 @@ function curl_search(string $name, array $config)
 /**
  *
  * @param string $name
- * @param int $cat
+ * @param int    $cat
  * @param string $torrent
  * @param string $body
  * @param string $nfo
- * @param array $config
+ * @param array  $config
+ * @param string $imdb_id
  *
- * @return mixed|string
  * @throws ErrorException
  *
+ * @return mixed|string
  */
-function curl_post(string $name, int $cat, string $torrent, string $body, string $nfo, array $config)
+function curl_post(string $name, int $cat, string $torrent, string $body, string $nfo, array $config, string $imdb_id)
 {
-    $curl = new Curl();
-    $curl->post($config['url'] . '/takeupload.php', [
+    $params = [
         'bot' => $config['username'],
         'torrent_pass' => $config['torrent_pass'],
         'auth' => $config['auth'],
@@ -136,7 +146,13 @@ function curl_post(string $name, int $cat, string $torrent, string $body, string
         'file' => "@$torrent",
         'nfo' => "@$nfo",
         'body' => "$body",
-    ]);
+    ];
+    if (!empty($imdb_id)) {
+        $params['imdb_id'] = $imdb_id;
+        $params['url'] = "https://www.imdb.com/title/tt{$imdb_id}";
+    }
+    $curl = new Curl();
+    $curl->post($config['url'] . '/takeupload.php', $params);
 
     if ($curl->error) {
         $response = 'Error: ' . $curl->errorCode . ': ' . $curl->errorMessage . "\n";
@@ -152,14 +168,15 @@ function curl_post(string $name, int $cat, string $torrent, string $body, string
  * @param string $torrent
  * @param string $name
  * @param string $nfo
- * @param array $config
+ * @param array  $config
+ * @param string $imdb_id
  *
  * @throws ErrorException
  */
-function upload_torrent(string $torrent, string $name, string $nfo, array $config)
+function upload_torrent(string $torrent, string $name, string $nfo, array $config, string $imdb_id)
 {
     $desc = file_get_contents($config['descr']);
-    $response = curl_post($name, $config['category'], $torrent, $desc, $nfo, $config);
+    $response = curl_post($name, $config['category'], $torrent, $desc, $nfo, $config, $imdb_id);
     echo $response . "\n";
 }
 
@@ -218,8 +235,8 @@ function bytes_to_megabytes(int $bytes)
 
 /**
  * @param string $name
- * @param int $pieces
- * @param array $config
+ * @param int    $pieces
+ * @param array  $config
  *
  * @return string
  */
@@ -274,4 +291,20 @@ function getname(string $name)
     $name = str_ireplace('2_1', '2.1', $name);
 
     return $name;
+}
+
+/**
+ * @param $text
+ *
+ * @return mixed|string
+ */
+function get_imdb($text)
+{
+    $imdb_id = '';
+    preg_match('/tt(\d{7,8})/i', $text, $match);
+    if (!empty($match[1])) {
+        $imdb_id = $match[1];
+    }
+
+    return $imdb_id;
 }
