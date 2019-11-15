@@ -25,11 +25,15 @@ cp config.php.example config.php
 nano config.php
 ```
 
-### Running on a single folder ```php upload.php``` and follow the prompts or ```php upload.php /path/to/parent_folder /path/to/descr[optional]``` and follow the prompts
-
-### Running on multiple folders, point ```upload_loop.php``` to the parent folder
+### To run for single upload
 ```
-php upload_loop.php /path/to/parent/folder/
+php upload.php
+php upload.php category /path/to/parent_folder /path/to/descr[optional]
+```
+
+### To run for multiple uploads
+```
+php upload_loop.php category category /path/to/parent/folder/
 ```
 
 ### To update

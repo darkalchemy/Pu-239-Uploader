@@ -1,13 +1,11 @@
 <?php
 
 // This can be used to upload many folders at once.
-
-$category = 41; // set this to the category that your uploads will go to
-
-if (!empty($argv[1])) {
-    $path = $argv[1];
+if (!empty($argv[1]) && is_numeric($argv[1]) && !empty($argv[2])) {
+    $category = (int) $argv[1];
+    $path = $argv[2];
 } else {
-    die("You must pass the parent path of the data to upload\n{$argv[0]} \"/path/to/data\"\n\n");
+    die("You must pass the category and parent path of the data to upload\n{$argv[0]} category \"/path/to/data\"\n\n");
 }
 
 foreach (new DirectoryIterator($path) as $fileinfo) {
@@ -29,8 +27,6 @@ foreach (new DirectoryIterator($path) as $fileinfo) {
         }
     }
 
-    if (!empty($nfo)) {
-        $command = "php upload.php $category \"$dir\" \"$nfo\"";
-        passthru($command);
-    }
+    $command = "php upload.php $category \"$dir\" \"$nfo\"";
+    passthru($command);
 }
