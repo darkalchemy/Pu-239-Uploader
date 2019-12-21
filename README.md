@@ -1,4 +1,4 @@
-# Pu-239 Uploader
+# Pu-239 Uploader - No longer being developed
 This can be used to upload a single file or call it from another file and upload multiple torrents.  
 Point the upload.php script to a single folder and upload 1 torrent or point the loop_example.php script a folder of folders and upload many torrents with the same category.  
 This script gets the torrent name from the parent folder, so name it appropriately.  
