@@ -36,7 +36,7 @@ if (empty($config['descr'])) {
 try {
     $search = curl_search($name, $config);
 } catch (ErrorException $e) {
-    // TODO
+    die($e->getMessage());
 }
 if (!empty($search['msg'])) {
     echo $search['msg'] . "\n";
@@ -55,18 +55,18 @@ $torrent = create_torrent($name, $pieces, $config);
 try {
     upload_torrent($torrent, $name, $nfo, $config, $imdb_id);
 } catch (ErrorException $e) {
-    // TODO
+    die($e->getMessage());
 }
 try {
     $search = curl_search($name, $config);
 } catch (ErrorException $e) {
-    // TODO
+    die($e->getMessage());
 }
 if (!empty($search[0]['id'])) {
     try {
         download_torrent($torrent, $config, $search[0]['id']);
     } catch (ErrorException $e) {
-        // TODO
+        die($e->getMessage());
     }
     if (file_exists($torrent)) {
         echo "$torrent downloaded successfully from {$config['url']}\n";
@@ -175,7 +175,7 @@ function curl_post(string $name, int $cat, string $torrent, string $body, string
  */
 function upload_torrent(string $torrent, string $name, string $nfo, array $config, string $imdb_id)
 {
-    $desc = file_get_contents($config['descr']);
+    $desc = is_file($config['descr']) ? file_get_contents($config['descr']) : $config['descr'];
     $response = curl_post($name, $config['category'], $torrent, $desc, $nfo, $config, $imdb_id);
     echo $response . "\n";
 }
